@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                             String             @id @default(cuid())
+  createdAt                      DateTime           @default(now()) @map("created_at")
+  notificationPermissionStatus   String             @default("default") @map("notification_permission_status")
+  email                          String?
+  emailNotificationsEnabled      Boolean            @default(false) @map("email_notifications_enabled")
+  timezone                       String             @default("Europe/Amsterdam")
+  preferredLanguage              String             @default("nl") @map("preferred_language")
+  createdFromDevice              String?            @map("created_from_device")
+  locations                      Location[]
+  alertSettings                  AlertSetting[]
+  pushSubscriptions              PushSubscription[]
+  notificationLogs               NotificationLog[]
+
+  @@map("users")
+}
+
+model Location {
+  id            String           @id @default(cuid())
+  userId        String           @map("user_id")
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  latitude      Float
+  longitude     Float
+  addressLabel  String?          @map("address_label")
+  isActive      Boolean          @default(true) @map("is_active")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  alertSetting  AlertSetting?
+  rainCheckLogs RainCheckLog[]
+  notifications NotificationLog[]
+
+  @@index([userId])
+  @@map("locations")
+}
+
+model AlertSetting {
+  id                                String   @id @default(cuid())
+  userId                            String   @map("user_id")
+  locationId                        String   @unique @map("location_id")
+  user                              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location                          Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  warningMinutesBeforeRain          Int      @default(15) @map("warning_minutes_before_rain")
+  minimumRainIntensityThreshold     String   @default("light") @map("minimum_rain_intensity_threshold")
+  quietHoursStart                   String?  @map("quiet_hours_start")
+  quietHoursEnd                     String?  @map("quiet_hours_end")
+  repeatNotificationCooldownMinutes Int      @default(60) @map("repeat_notification_cooldown_minutes")
+  isActive                          Boolean  @default(true) @map("is_active")
+
+  @@index([userId])
+  @@map("alert_settings")
+}
+
+model PushSubscription {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint    String    @unique
+  p256dh      String
+  auth        String
+  userAgent   String?   @map("user_agent")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  lastUsedAt  DateTime? @map("last_used_at")
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+model RainCheckLog {
+  id                     String    @id @default(cuid())
+  locationId             String    @map("location_id")
+  location               Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  checkedAt              DateTime  @default(now()) @map("checked_at")
+  provider               String
+  forecastRawReference   String?   @map("forecast_raw_reference")
+  rainDetected           Boolean   @default(false) @map("rain_detected")
+  firstRainExpectedAt    DateTime? @map("first_rain_expected_at")
+  minutesUntilRain       Int?      @map("minutes_until_rain")
+  intensity              String?
+  precipitationMmPerHour Float?    @map("precipitation_mm_per_hour")
+  notificationSent       Boolean   @default(false) @map("notification_sent")
+  errorMessage           String?   @map("error_message")
+
+  @@index([locationId, checkedAt])
+  @@map("rain_check_logs")
+}
+
+model NotificationLog {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  locationId   String    @map("location_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location     Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  sentAt       DateTime  @default(now()) @map("sent_at")
+  title        String
+  body         String
+  forecastTime DateTime @map("forecast_time")
+  intensity    String
+  provider     String
+  clickedAt    DateTime? @map("clicked_at")
+
+  @@index([userId, sentAt])
+  @@index([locationId, sentAt])
+  @@map("notification_logs")
+}
