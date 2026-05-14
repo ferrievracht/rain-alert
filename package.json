@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.105.4",
     "date-fns": "^3.6.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",

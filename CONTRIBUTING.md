@@ -14,6 +14,7 @@ Dank je wel voor je interesse in Rain Alert.
 
 - Zet geen API keys of VAPID private keys in frontendcode of commits.
 - Zet MailerSend tokens alleen server-side in environment variables.
+- Zet Supabase service role keys alleen server-side in environment variables.
 - Houd KNMI als primaire beslisbron voor productie-notificaties.
 - Gebruik Open-Meteo alleen als fallback of langere termijn bron.
 - Buienradar mag alleen in demo- of developmentmodus worden gebruikt.

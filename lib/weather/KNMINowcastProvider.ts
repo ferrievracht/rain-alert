@@ -6,6 +6,7 @@ import { classifyRainIntensity } from "./intensity";
 import { isInsideBounds, isValidLatLon, parseBounds } from "./geo";
 import { KNMIOpenDataClient } from "./knmiOpenDataClient";
 import { decodeKnmiHdf5Point } from "./knmiHdf5";
+import { SupabaseNowcastStorage } from "@/lib/storage/supabaseStorage";
 
 type CacheEntry = {
   filename: string;
@@ -18,7 +19,10 @@ let cacheEntry: CacheEntry | null = null;
 export class KNMINowcastProvider implements WeatherProvider {
   name = "KNMI";
 
-  constructor(private readonly client = new KNMIOpenDataClient()) {}
+  constructor(
+    private readonly client = new KNMIOpenDataClient(),
+    private readonly storage = new SupabaseNowcastStorage()
+  ) {}
 
   async getRainForecast(latitude: number, longitude: number): Promise<RainForecast[]> {
     if (!isValidLatLon(latitude, longitude)) {
@@ -56,7 +60,14 @@ export class KNMINowcastProvider implements WeatherProvider {
       return cacheEntry;
     }
 
+    const storedBuffer = await this.storage.downloadNowcast(filename);
+    if (storedBuffer) {
+      cacheEntry = { filename, buffer: storedBuffer, downloadedAt: Date.now() };
+      return cacheEntry;
+    }
+
     const buffer = await this.client.downloadFile(filename);
+    await this.storage.uploadNowcast(filename, buffer);
     cacheEntry = { filename, buffer, downloadedAt: Date.now() };
     return cacheEntry;
   }

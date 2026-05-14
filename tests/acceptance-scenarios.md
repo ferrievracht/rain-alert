@@ -6,6 +6,8 @@
 - Notificaties weigeren: blokkeer browsermeldingen en controleer de foutmelding in de notificatiebox.
 - MailerSend e-mail instellen: open `/settings`, vul e-mailadres in, schakel e-mailalerts in en sla op.
 - MailerSend testmail: zet `MAILERSEND_API_TOKEN` en `MAILERSEND_FROM_EMAIL`, verstuur een testmail vanuit `/settings`.
+- Supabase Storage cache: zet `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` en `SUPABASE_STORAGE_BUCKET`, haal KNMI nowcast op en controleer dat het HDF5 bestand onder `knmi-nowcast/` wordt opgeslagen.
+- Railway healthcheck: open `/api/health` en controleer `ok: true`.
 - KNMI forecast succesvol ophalen: zet `KNMI_API_KEY`, installeer `h5wasm`, configureer `KNMI_HDF5_DATASET_PATH` indien nodig en open `/api/weather?lat=52.37&lon=4.90`.
 - KNMI faalt en Open-Meteo fallback werkt: laat `KNMI_API_KEY` leeg en controleer dat `/api/weather` `provider: Open-Meteo` teruggeeft.
 - Regen verwacht binnen ingestelde tijd: unit test `rainDecision.test.ts` scenario `notifies when rain is inside the warning window`.
